@@ -1,4 +1,4 @@
-﻿// ★주의: 새로 배포한 웹 앱 URL이 맞는지 확인하세요!
+// ★주의: 새로 배포한 웹 앱 URL이 맞는지 확인하세요!
 const API_URL = "https://script.google.com/macros/s/AKfycbwXFETj3boiOMxtNStSazbaHTI08pG2-yoEJxNoJY0BPS3EqEFjGg8LXx2mXjd9_pMG/exec";
 
 // DOM 요소 연동
@@ -97,9 +97,11 @@ function refreshView() {
 
   statTotal.textContent = filtered.length;
 
+  // ★ 날짜 오류 100% 해결: 브라우저 환경 무시하고 완벽한 한국(KST) 날짜 추출
   const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  const todayStr = new Date(now.getTime() - offset + (9 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+  const todayStr = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+  
+  // 오늘 날짜와 정확히 일치하는 데이터만 카운트
   statToday.textContent = rawRows.filter(r => r.date === todayStr).length;
 
   const branchCounts = { "동구점": 0, "남구점": 0, "첨단점": 0 };
@@ -136,7 +138,8 @@ async function loadData() {
     // 1. 신청자 데이터 매핑
     if (data.applicants) {
       rawRows = data.applicants.map(row => ({
-        date: row.date ? new Date(row.date).toISOString().slice(0, 10) : "",
+        // ★ 날짜 오류 방지: 서버에서 준 "YYYY-MM-DD" 문자열을 그대로 사용
+        date: row.date ? String(row.date).slice(0, 10) : "",
         branch: extractBranch(row),
         offlinePath: (function(val) {
           const path = val || "기타";
